@@ -686,7 +686,7 @@ impl ColliderBuilder {
 
     /// Initializes a collider builder with a triangle mesh shape defined by its vertex and index buffers.
     pub fn trimesh(vertices: Vec<Point<Real>>, indices: Vec<[u32; 3]>) -> Self {
-        Self::new(SharedShape::trimesh(vertices, indices))
+        Self::new(SharedShape::trimesh(vertices, indices).unwrap())
     }
 
     /// Initializes a collider builder with a triangle mesh shape defined by its vertex and index buffers and
@@ -696,7 +696,7 @@ impl ColliderBuilder {
         indices: Vec<[u32; 3]>,
         flags: TriMeshFlags,
     ) -> Self {
-        Self::new(SharedShape::trimesh_with_flags(vertices, indices, flags))
+        Self::new(SharedShape::trimesh_with_flags(vertices, indices, flags).unwrap())
     }
 
     /// Initializes a collider builder with a shape converted from the given triangle mesh index
