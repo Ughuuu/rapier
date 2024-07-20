@@ -19,6 +19,8 @@ pub enum CoefficientCombineRule {
     Multiply = 2,
     /// The greatest coefficient is chosen.
     Max = 3,
+    /// The sum of the two coefficients.
+    Sum = 4,
 }
 
 impl CoefficientCombineRule {
@@ -32,9 +34,10 @@ impl CoefficientCombineRule {
 
         match effective_rule {
             CoefficientCombineRule::Average => (coeff1 + coeff2) / 2.0,
-            CoefficientCombineRule::Min => coeff1.min(coeff2),
+            CoefficientCombineRule::Min => coeff1.min(coeff2).abs(),
             CoefficientCombineRule::Multiply => coeff1 * coeff2,
             CoefficientCombineRule::Max => coeff1.max(coeff2),
+            CoefficientCombineRule::Sum => (coeff1 + coeff2).clamp(0.0, 1.0),
         }
     }
 }
