@@ -17,6 +17,8 @@ pub enum CoefficientCombineRule {
     Min,
     /// The two coefficients are multiplied.
     Multiply,
+    /// The sum of the two coefficients.
+    Sum,
     /// The greatest coefficient is chosen.
     Max,
 }
@@ -27,8 +29,9 @@ impl CoefficientCombineRule {
 
         match effective_rule {
             0 => (coeff1 + coeff2) / 2.0,
-            1 => coeff1.min(coeff2),
+            1 => coeff1.min(coeff2).abs(),
             2 => coeff1 * coeff2,
+            3 => (coeff1 + coeff2).clamp(0.0, 1.0),
             _ => coeff1.max(coeff2),
         }
     }
