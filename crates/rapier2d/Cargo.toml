@@ -64,7 +64,8 @@ vec_map = { version = "0.8", optional = true }
 instant = { version = "0.1", features = ["now"], optional = true }
 num-traits = "0.2"
 nalgebra = "0.33"
-parry2d = "0.17.0"
+parry2d = { git = "https://github.com/ughuuu/parry", branch = "custom-changes" }
+#parry2d = "0.17.0"
 simba = "0.9"
 approx = "0.5"
 rayon = { version = "1", optional = true }
