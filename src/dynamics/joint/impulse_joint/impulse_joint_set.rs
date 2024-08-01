@@ -4,6 +4,7 @@ use crate::geometry::{InteractionGraph, RigidBodyGraphIndex, TemporaryInteractio
 use crate::data::arena::Arena;
 use crate::data::Coarena;
 use crate::dynamics::{GenericJoint, IslandManager, RigidBodyHandle, RigidBodySet};
+use crate::prelude::RigidBodyChanges;
 
 /// The unique identifier of a joint added to the joint set.
 /// The unique identifier of a collider added to a collider set.
@@ -293,11 +294,18 @@ impl ImpulseJointSet {
             let joint = &edge.weight;
             let rb1 = &bodies[joint.body1];
             let rb2 = &bodies[joint.body2];
+            let rb1_changes = rb1.changes;
+            let rb2_changes = rb2.changes;
 
             if joint.data.is_enabled()
+                // At least one of bodies has to be dynamic
                 && (rb1.is_dynamic() || rb2.is_dynamic())
-                && (!rb1.is_dynamic() || !rb1.is_sleeping())
-                && (!rb2.is_dynamic() || !rb2.is_sleeping())
+                // If the static one changed, wake up the other one
+                // If the dynamic one is not sleeping, wake up the other one
+                && ((!rb1.is_dynamic() && rb1.changes.contains(RigidBodyChanges::MODIFIED))||
+                    (!rb2.is_dynamic() && rb2.changes.contains(RigidBodyChanges::MODIFIED)) ||
+                    (rb1.is_dynamic() && !rb1.is_sleeping()) ||
+                    (rb2.is_dynamic() && !rb2.is_sleeping()))
             {
                 let island_index = if !rb1.is_dynamic() {
                     rb2.ids.active_island_id
