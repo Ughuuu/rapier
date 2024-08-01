@@ -294,8 +294,6 @@ impl ImpulseJointSet {
             let joint = &edge.weight;
             let rb1 = &bodies[joint.body1];
             let rb2 = &bodies[joint.body2];
-            let rb1_changes = rb1.changes;
-            let rb2_changes = rb2.changes;
 
             if joint.data.is_enabled()
                 // At least one of bodies has to be dynamic
