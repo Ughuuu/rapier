@@ -563,6 +563,7 @@ impl JointTwoBodyConstraintHelper<Real> {
 
     pub fn lock_linear_generic(
         &self,
+        joint: &GenericJoint,
         params: &IntegrationParameters,
         jacobians: &mut DVector<Real>,
         j_id: &mut usize,
@@ -592,7 +593,7 @@ impl JointTwoBodyConstraintHelper<Real> {
             ang_jac2,
         );
 
-        let erp_inv_dt = params.joint_erp_inv_dt();
+        let erp_inv_dt = params.joint_erp_inv_dt(joint);
         let rhs_bias = lin_jac.dot(&self.lin_err) * erp_inv_dt;
         c.rhs += rhs_bias;
         c
@@ -600,6 +601,7 @@ impl JointTwoBodyConstraintHelper<Real> {
 
     pub fn limit_linear_generic(
         &self,
+        joint: &GenericJoint,
         params: &IntegrationParameters,
         jacobians: &mut DVector<Real>,
         j_id: &mut usize,
@@ -634,7 +636,7 @@ impl JointTwoBodyConstraintHelper<Real> {
         let min_enabled = dist <= limits[0];
         let max_enabled = limits[1] <= dist;
 
-        let erp_inv_dt = params.joint_erp_inv_dt();
+        let erp_inv_dt = params.joint_erp_inv_dt(joint);
         let rhs_bias = ((dist - limits[1]).max(0.0) - (limits[0] - dist).max(0.0)) * erp_inv_dt;
         constraint.rhs += rhs_bias;
         constraint.impulse_bounds = [
@@ -702,6 +704,7 @@ impl JointTwoBodyConstraintHelper<Real> {
 
     pub fn lock_angular_generic(
         &self,
+        joint: &GenericJoint,
         params: &IntegrationParameters,
         jacobians: &mut DVector<Real>,
         j_id: &mut usize,
@@ -732,7 +735,7 @@ impl JointTwoBodyConstraintHelper<Real> {
             ang_jac,
         );
 
-        let erp_inv_dt = params.joint_erp_inv_dt();
+        let erp_inv_dt = params.joint_erp_inv_dt(joint);
         #[cfg(feature = "dim2")]
         let rhs_bias = self.ang_err.im * erp_inv_dt;
         #[cfg(feature = "dim3")]
@@ -743,6 +746,7 @@ impl JointTwoBodyConstraintHelper<Real> {
 
     pub fn limit_angular_generic(
         &self,
+        joint: &GenericJoint,
         params: &IntegrationParameters,
         jacobians: &mut DVector<Real>,
         j_id: &mut usize,
@@ -786,7 +790,7 @@ impl JointTwoBodyConstraintHelper<Real> {
             max_enabled as u32 as Real * Real::MAX,
         ];
 
-        let erp_inv_dt = params.joint_erp_inv_dt();
+        let erp_inv_dt = params.joint_erp_inv_dt(joint);
         let rhs_bias =
             ((s_ang - s_limits[1]).max(0.0) - (s_limits[0] - s_ang).max(0.0)) * erp_inv_dt;
 
@@ -954,6 +958,7 @@ impl JointTwoBodyConstraintHelper<Real> {
 
     pub fn lock_linear_generic_one_body(
         &self,
+        joint: &GenericJoint,
         params: &IntegrationParameters,
         jacobians: &mut DVector<Real>,
         j_id: &mut usize,
@@ -979,7 +984,7 @@ impl JointTwoBodyConstraintHelper<Real> {
             ang_jac2,
         );
 
-        let erp_inv_dt = params.joint_erp_inv_dt();
+        let erp_inv_dt = params.joint_erp_inv_dt(joint);
         let rhs_bias = lin_jac.dot(&self.lin_err) * erp_inv_dt;
         c.rhs += rhs_bias;
         c
@@ -987,6 +992,7 @@ impl JointTwoBodyConstraintHelper<Real> {
 
     pub fn limit_linear_generic_one_body(
         &self,
+        joint: &GenericJoint,
         params: &IntegrationParameters,
         jacobians: &mut DVector<Real>,
         j_id: &mut usize,
@@ -1017,7 +1023,7 @@ impl JointTwoBodyConstraintHelper<Real> {
         let min_enabled = dist <= limits[0];
         let max_enabled = limits[1] <= dist;
 
-        let erp_inv_dt = params.joint_erp_inv_dt();
+        let erp_inv_dt = params.joint_erp_inv_dt(joint);
         let rhs_bias = ((dist - limits[1]).max(0.0) - (limits[0] - dist).max(0.0)) * erp_inv_dt;
         constraint.rhs += rhs_bias;
         constraint.impulse_bounds = [
@@ -1082,6 +1088,7 @@ impl JointTwoBodyConstraintHelper<Real> {
 
     pub fn lock_angular_generic_one_body(
         &self,
+        joint: &GenericJoint,
         params: &IntegrationParameters,
         jacobians: &mut DVector<Real>,
         j_id: &mut usize,
@@ -1108,7 +1115,7 @@ impl JointTwoBodyConstraintHelper<Real> {
             ang_jac,
         );
 
-        let erp_inv_dt = params.joint_erp_inv_dt();
+        let erp_inv_dt = params.joint_erp_inv_dt(joint);
         #[cfg(feature = "dim2")]
         let rhs_bias = self.ang_err.im * erp_inv_dt;
         #[cfg(feature = "dim3")]
@@ -1119,6 +1126,7 @@ impl JointTwoBodyConstraintHelper<Real> {
 
     pub fn limit_angular_generic_one_body(
         &self,
+        joint: &GenericJoint,
         params: &IntegrationParameters,
         jacobians: &mut DVector<Real>,
         j_id: &mut usize,
@@ -1158,7 +1166,7 @@ impl JointTwoBodyConstraintHelper<Real> {
             max_enabled as u32 as Real * Real::MAX,
         ];
 
-        let erp_inv_dt = params.joint_erp_inv_dt();
+        let erp_inv_dt = params.joint_erp_inv_dt(joint);
         let rhs_bias =
             ((s_ang - s_limits[1]).max(0.0) - (s_limits[0] - s_ang).max(0.0)) * erp_inv_dt;
 

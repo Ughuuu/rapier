@@ -4,11 +4,13 @@ use crate::dynamics::joint::MultibodyLink;
 use crate::dynamics::solver::{JointGenericOneBodyConstraint, WritebackId};
 use crate::dynamics::{IntegrationParameters, JointMotor, Multibody};
 use crate::math::Real;
+use crate::prelude::GenericJoint;
 use na::DVector;
 
 /// Initializes and generate the velocity constraints applicable to the multibody links attached
 /// to this multibody_joint.
 pub fn unit_joint_limit_constraint(
+    joint: &GenericJoint,
     params: &IntegrationParameters,
     multibody: &Multibody,
     link: &MultibodyLink,
@@ -23,8 +25,8 @@ pub fn unit_joint_limit_constraint(
     let ndofs = multibody.ndofs();
     let min_enabled = curr_pos < limits[0];
     let max_enabled = limits[1] < curr_pos;
-    let erp_inv_dt = params.joint_erp_inv_dt();
-    let cfm_coeff = params.joint_cfm_coeff();
+    let erp_inv_dt = params.joint_erp_inv_dt(joint);
+    let cfm_coeff = params.joint_cfm_coeff(joint);
     let rhs_bias = ((curr_pos - limits[1]).max(0.0) - (limits[0] - curr_pos).max(0.0)) * erp_inv_dt;
     let rhs_wo_bias = 0.0;
 

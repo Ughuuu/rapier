@@ -2,6 +2,7 @@ use crate::math::Real;
 use na::RealField;
 use std::num::NonZeroUsize;
 
+use super::GenericJoint;
 #[cfg(doc)]
 use super::RigidBodyActivation;
 
@@ -42,19 +43,6 @@ pub struct IntegrationParameters {
     /// value.
     /// (default: `30.0`).
     pub contact_natural_frequency: Real,
-
-    /// > 0: the natural frequency used by the springs for joint constraint regularization.
-    ///
-    /// Increasing this value will make it so that penetrations get fixed more quickly.
-    /// (default: `1.0e6`).
-    pub joint_natural_frequency: Real,
-
-    /// The fraction of critical damping applied to the joint for constraints regularization.
-    ///
-    /// Larger values make the constraints more compliant (allowing more joint
-    /// drift before stabilization).
-    /// (default `1.0`).
-    pub joint_damping_ratio: Real,
 
     /// The coefficient in `[0, 1]` applied to warmstart impulses, i.e., impulses that are used as the
     /// initial solution (instead of 0) at the next simulation step.
@@ -159,14 +147,14 @@ impl IntegrationParameters {
     }
 
     /// The joint’s spring angular frequency for constraint regularization.
-    pub fn joint_angular_frequency(&self) -> Real {
-        self.joint_natural_frequency * Real::two_pi()
+    pub fn joint_angular_frequency(&self, joint: &GenericJoint) -> Real {
+        joint.joint_natural_frequency * Real::two_pi()
     }
 
     /// The [`Self::joint_erp`] coefficient, multiplied by the inverse timestep length.
-    pub fn joint_erp_inv_dt(&self) -> Real {
-        let ang_freq = self.joint_angular_frequency();
-        ang_freq / (self.dt * ang_freq + 2.0 * self.joint_damping_ratio)
+    pub fn joint_erp_inv_dt(&self, joint: &GenericJoint) -> Real {
+        let ang_freq = self.joint_angular_frequency(joint);
+        ang_freq / (self.dt * ang_freq + 2.0 * joint.joint_damping_ratio)
     }
 
     /// The effective Error Reduction Parameter applied for calculating regularization forces
@@ -174,8 +162,8 @@ impl IntegrationParameters {
     ///
     /// This parameter is computed automatically from [`Self::joint_natural_frequency`],
     /// [`Self::joint_damping_ratio`] and the substep length.
-    pub fn joint_erp(&self) -> Real {
-        self.dt * self.joint_erp_inv_dt()
+    pub fn joint_erp(&self, joint: &GenericJoint) -> Real {
+        self.dt * self.joint_erp_inv_dt(joint)
     }
 
     /// The CFM factor to be used in the constraint resolution.
@@ -226,10 +214,10 @@ impl IntegrationParameters {
     ///
     /// This parameter is computed automatically from [`Self::joint_natural_frequency`],
     /// [`Self::joint_damping_ratio`] and the substep length.
-    pub fn joint_cfm_coeff(&self) -> Real {
+    pub fn joint_cfm_coeff(&self, joint: &GenericJoint) -> Real {
         // Compute CFM assuming a critically damped spring multiplied by the damping ratio.
         // The logic is similar to `Self::contact_cfm_factor`.
-        let joint_erp = self.joint_erp();
+        let joint_erp = self.joint_erp(joint);
         if joint_erp == 0.0 {
             return 0.0;
         }
@@ -237,8 +225,8 @@ impl IntegrationParameters {
         inv_erp_minus_one * inv_erp_minus_one
             / ((1.0 + inv_erp_minus_one)
                 * 4.0
-                * self.joint_damping_ratio
-                * self.joint_damping_ratio)
+                * joint.joint_damping_ratio
+                * joint.joint_damping_ratio)
     }
 
     /// Amount of penetration the engine won’t attempt to correct (default: `0.001` multiplied by
@@ -275,8 +263,6 @@ impl IntegrationParameters {
             min_ccd_dt: 1.0 / 60.0 / 100.0,
             contact_natural_frequency: 30.0,
             contact_damping_ratio: 5.0,
-            joint_natural_frequency: 1.0e6,
-            joint_damping_ratio: 1.0,
             warmstart_coefficient: 1.0,
             num_internal_pgs_iterations: 1,
             num_internal_stabilization_iterations: 2,

@@ -213,6 +213,17 @@ pub enum JointEnabled {
 #[derive(Copy, Clone, Debug, PartialEq)]
 /// A generic joint.
 pub struct GenericJoint {
+    /// > 0: the natural frequency used by the springs for joint constraint regularization.
+    ///
+    /// Increasing this value will make it so that penetrations get fixed more quickly.
+    /// (default: `1.0e6`).
+    pub joint_natural_frequency: Real,
+    /// The fraction of critical damping applied to the joint for constraints regularization.
+    ///
+    /// Larger values make the constraints more compliant (allowing more joint
+    /// drift before stabilization).
+    /// (default `1.0`).
+    pub joint_damping_ratio: Real,
     /// The joint’s frame, expressed in the first rigid-body’s local-space.
     pub local_frame1: Isometry<Real>,
     /// The joint’s frame, expressed in the second rigid-body’s local-space.
@@ -253,6 +264,8 @@ pub struct GenericJoint {
 impl Default for GenericJoint {
     fn default() -> Self {
         Self {
+            joint_natural_frequency: 1.0e6,
+            joint_damping_ratio: 1.0,
             local_frame1: Isometry::identity(),
             local_frame2: Isometry::identity(),
             locked_axes: JointAxesMask::empty(),
@@ -305,6 +318,22 @@ impl GenericJoint {
     /// Is this joint enabled?
     pub fn is_enabled(&self) -> bool {
         self.enabled == JointEnabled::Enabled
+    }
+
+    pub fn get_joint_natural_frequency(&self) -> Real {
+        self.joint_natural_frequency
+    }
+
+    pub fn set_joint_natural_frequency(&mut self, joint_natural_frequency: Real) {
+        self.joint_natural_frequency = joint_natural_frequency;
+    }
+
+    pub fn get_joint_damping_ratio(&self) -> Real {
+        self.joint_damping_ratio
+    }
+
+    pub fn set_joint_damping_ratio(&mut self, joint_damping_ratio: Real) {
+        self.joint_damping_ratio = joint_damping_ratio;
     }
 
     /// Set whether this joint is enabled or not.

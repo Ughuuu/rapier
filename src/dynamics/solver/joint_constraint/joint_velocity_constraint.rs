@@ -199,6 +199,7 @@ impl JointTwoBodyConstraint<Real, 1> {
                 };
 
                 out[len] = builder.motor_linear(
+                    joint,
                     params,
                     [joint_id],
                     body1,
@@ -245,6 +246,7 @@ impl JointTwoBodyConstraint<Real, 1> {
         for i in DIM..SPATIAL_DIM {
             if locked_axes & (1 << i) != 0 {
                 out[len] = builder.lock_angular(
+                    joint,
                     params,
                     [joint_id],
                     body1,
@@ -258,7 +260,7 @@ impl JointTwoBodyConstraint<Real, 1> {
         for i in 0..DIM {
             if locked_axes & (1 << i) != 0 {
                 out[len] =
-                    builder.lock_linear(params, [joint_id], body1, body2, i, WritebackId::Dof(i));
+                    builder.lock_linear(joint, params, [joint_id], body1, body2, i, WritebackId::Dof(i));
                 len += 1;
             }
         }
@@ -266,6 +268,7 @@ impl JointTwoBodyConstraint<Real, 1> {
         for i in DIM..SPATIAL_DIM {
             if (limit_axes & !coupled_axes) & (1 << i) != 0 {
                 out[len] = builder.limit_angular(
+                    joint,
                     params,
                     [joint_id],
                     body1,
@@ -280,6 +283,7 @@ impl JointTwoBodyConstraint<Real, 1> {
         for i in 0..DIM {
             if (limit_axes & !coupled_axes) & (1 << i) != 0 {
                 out[len] = builder.limit_linear(
+                    joint,
                     params,
                     [joint_id],
                     body1,
@@ -295,6 +299,7 @@ impl JointTwoBodyConstraint<Real, 1> {
         #[cfg(feature = "dim3")]
         if has_ang_coupling && (limit_axes & (1 << first_coupled_ang_axis_id)) != 0 {
             out[len] = builder.limit_angular_coupled(
+                joint,
                 params,
                 [joint_id],
                 body1,
@@ -311,6 +316,7 @@ impl JointTwoBodyConstraint<Real, 1> {
 
         if has_lin_coupling && (limit_axes & (1 << first_coupled_lin_axis_id)) != 0 {
             out[len] = builder.limit_linear_coupled(
+                joint,
                 params,
                 [joint_id],
                 body1,
@@ -373,7 +379,7 @@ impl JointTwoBodyConstraint<SimdReal, SIMD_WIDTH> {
         for i in 0..DIM {
             if locked_axes & (1 << i) != 0 {
                 out[len] =
-                    builder.lock_linear(params, joint_id, body1, body2, i, WritebackId::Dof(i));
+                    builder.lock_linear(joint, params, joint_id, body1, body2, i, WritebackId::Dof(i));
                 len += 1;
             }
         }
@@ -381,6 +387,7 @@ impl JointTwoBodyConstraint<SimdReal, SIMD_WIDTH> {
         for i in DIM..SPATIAL_DIM {
             if locked_axes & (1 << i) != 0 {
                 out[len] = builder.lock_angular(
+                    joint,
                     params,
                     joint_id,
                     body1,
@@ -582,6 +589,7 @@ impl JointOneBodyConstraint<Real, 1> {
         for i in DIM..SPATIAL_DIM {
             if locked_axes & (1 << i) != 0 {
                 out[len] = builder.lock_angular_one_body(
+                    joint,
                     params,
                     [joint_id],
                     body1,
@@ -595,6 +603,7 @@ impl JointOneBodyConstraint<Real, 1> {
         for i in 0..DIM {
             if locked_axes & (1 << i) != 0 {
                 out[len] = builder.lock_linear_one_body(
+                    joint,
                     params,
                     [joint_id],
                     body1,
@@ -609,6 +618,7 @@ impl JointOneBodyConstraint<Real, 1> {
         for i in DIM..SPATIAL_DIM {
             if (limit_axes & !coupled_axes) & (1 << i) != 0 {
                 out[len] = builder.limit_angular_one_body(
+                    joint,
                     params,
                     [joint_id],
                     body1,
@@ -623,6 +633,7 @@ impl JointOneBodyConstraint<Real, 1> {
         for i in 0..DIM {
             if (limit_axes & !coupled_axes) & (1 << i) != 0 {
                 out[len] = builder.limit_linear_one_body(
+                    joint,
                     params,
                     [joint_id],
                     body1,
@@ -638,6 +649,7 @@ impl JointOneBodyConstraint<Real, 1> {
         #[cfg(feature = "dim3")]
         if has_ang_coupling && (limit_axes & (1 << first_coupled_ang_axis_id)) != 0 {
             out[len] = builder.limit_angular_coupled_one_body(
+                joint,
                 params,
                 [joint_id],
                 body1,
@@ -654,6 +666,7 @@ impl JointOneBodyConstraint<Real, 1> {
 
         if has_lin_coupling && (limit_axes & (1 << first_coupled_lin_axis_id)) != 0 {
             out[len] = builder.limit_linear_coupled_one_body(
+                joint,
                 params,
                 [joint_id],
                 body1,
@@ -691,6 +704,7 @@ impl JointOneBodyConstraint<Real, 1> {
 #[cfg(feature = "simd-is-enabled")]
 impl JointOneBodyConstraint<SimdReal, SIMD_WIDTH> {
     pub fn lock_axes(
+        joint: &GenericJoint,
         params: &IntegrationParameters,
         joint_id: [JointIndex; SIMD_WIDTH],
         body1: &JointFixedSolverBody<SimdReal>,
@@ -712,6 +726,7 @@ impl JointOneBodyConstraint<SimdReal, SIMD_WIDTH> {
         for i in 0..DIM {
             if locked_axes & (1 << i) != 0 {
                 out[len] = builder.lock_linear_one_body(
+                    joint,
                     params,
                     joint_id,
                     body1,
@@ -725,6 +740,7 @@ impl JointOneBodyConstraint<SimdReal, SIMD_WIDTH> {
         for i in DIM..SPATIAL_DIM {
             if locked_axes & (1 << i) != 0 {
                 out[len] = builder.lock_angular_one_body(
+                    joint,
                     params,
                     joint_id,
                     body1,

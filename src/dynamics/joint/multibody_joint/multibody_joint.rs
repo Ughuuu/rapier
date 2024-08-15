@@ -303,6 +303,7 @@ impl MultibodyJoint {
 
                 if (limit_bits & (1 << i)) != 0 {
                     joint::unit_joint_limit_constraint(
+                        &self.data,
                         params,
                         multibody,
                         link,
@@ -338,6 +339,7 @@ impl MultibodyJoint {
                 let limits = if (limit_bits & (1 << i)) != 0 {
                     let limits = [self.data.limits[i].min, self.data.limits[i].max];
                     joint::unit_joint_limit_constraint(
+                        &self.data,
                         params,
                         multibody,
                         link,

@@ -131,6 +131,7 @@ impl JointGenericTwoBodyConstraint {
         for i in DIM..SPATIAL_DIM {
             if locked_axes & (1 << i) != 0 {
                 out[len] = builder.lock_angular_generic(
+                    joint,
                     params,
                     jacobians,
                     j_id,
@@ -148,6 +149,7 @@ impl JointGenericTwoBodyConstraint {
         for i in 0..DIM {
             if locked_axes & (1 << i) != 0 {
                 out[len] = builder.lock_linear_generic(
+                    joint,
                     params,
                     jacobians,
                     j_id,
@@ -166,6 +168,7 @@ impl JointGenericTwoBodyConstraint {
         for i in DIM..SPATIAL_DIM {
             if limit_axes & (1 << i) != 0 {
                 out[len] = builder.limit_angular_generic(
+                    joint,
                     params,
                     jacobians,
                     j_id,
@@ -184,6 +187,7 @@ impl JointGenericTwoBodyConstraint {
         for i in 0..DIM {
             if limit_axes & (1 << i) != 0 {
                 out[len] = builder.limit_linear_generic(
+                    joint,
                     params,
                     jacobians,
                     j_id,
@@ -420,6 +424,7 @@ impl JointGenericOneBodyConstraint {
         for i in DIM..SPATIAL_DIM {
             if locked_axes & (1 << i) != 0 {
                 out[len] = builder.lock_angular_generic_one_body(
+                    joint,
                     params,
                     jacobians,
                     j_id,
@@ -435,6 +440,7 @@ impl JointGenericOneBodyConstraint {
         for i in 0..DIM {
             if locked_axes & (1 << i) != 0 {
                 out[len] = builder.lock_linear_generic_one_body(
+                    joint,
                     params,
                     jacobians,
                     j_id,
@@ -451,6 +457,7 @@ impl JointGenericOneBodyConstraint {
         for i in DIM..SPATIAL_DIM {
             if limit_axes & (1 << i) != 0 {
                 out[len] = builder.limit_angular_generic_one_body(
+                    joint,
                     params,
                     jacobians,
                     j_id,
@@ -467,6 +474,7 @@ impl JointGenericOneBodyConstraint {
         for i in 0..DIM {
             if limit_axes & (1 << i) != 0 {
                 out[len] = builder.limit_linear_generic_one_body(
+                    joint,
                     params,
                     jacobians,
                     j_id,
