@@ -13,7 +13,7 @@
 ///
 /// In other words, interactions are allowed between two filter iff. the following condition is met:
 /// ```ignore
-/// (self.memberships & rhs.filter) != 0 && (rhs.memberships & self.filter) != 0
+/// (self.memberships & rhs.filter) != 0 || (rhs.memberships & self.filter) != 0
 /// ```
 #[cfg_attr(feature = "serde-serialize", derive(Serialize, Deserialize))]
 #[derive(Copy, Clone, Debug, Hash, PartialEq, Eq)]
@@ -65,7 +65,7 @@ impl InteractionGroups {
         // NOTE: since const ops is not stable, we have to convert `Group` into u32
         // to use & operator in const context.
         (self.memberships.bits() & rhs.filter.bits()) != 0
-            && (rhs.memberships.bits() & self.filter.bits()) != 0
+            || (rhs.memberships.bits() & self.filter.bits()) != 0
     }
 }
 
