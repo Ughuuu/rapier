@@ -439,14 +439,6 @@ impl PhysicsPipeline {
         for handle in impulse_joints_iterator {
             islands.wake_up(bodies, handle.0, true);
         }
-        #[cfg(feature = "enhanced-determinism")]
-        for handle in impulse_joints
-            .to_wake_up
-            .drain(..)
-            .chain(multibody_joints.to_wake_up.drain(..))
-        {
-            islands.wake_up(bodies, handle.0, true);
-        }
 
         // Apply modifications.
         let mut modified_colliders = colliders.take_modified();
