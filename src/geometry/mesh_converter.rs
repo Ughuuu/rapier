@@ -60,9 +60,9 @@ impl MeshConverter {
     ) -> Result<(SharedShape, Isometry<Real>), MeshConverterError> {
         let mut transform = Isometry::identity();
         let shape = match self {
-            MeshConverter::TriMesh => SharedShape::trimesh(vertices, indices),
+            MeshConverter::TriMesh => SharedShape::trimesh(vertices, indices).unwrap(),
             MeshConverter::TriMeshWithFlags(flags) => {
-                SharedShape::trimesh_with_flags(vertices, indices, *flags)
+                SharedShape::trimesh_with_flags(vertices, indices, *flags).unwrap()
             }
             MeshConverter::Obb => {
                 let (pose, cuboid) = parry::utils::obb(&vertices);
