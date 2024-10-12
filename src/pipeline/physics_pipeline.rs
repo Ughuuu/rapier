@@ -499,7 +499,7 @@ impl PhysicsPipeline {
 
         if let Some(queries) = query_pipeline.as_deref_mut() {
             self.counters.stages.query_pipeline_time.start();
-            queries.update_incremental(colliders, &modified_colliders, &removed_colliders, false);
+            queries.update_incremental(colliders, &modified_colliders, &removed_colliders, true);
             self.counters.stages.query_pipeline_time.pause();
         }
 
