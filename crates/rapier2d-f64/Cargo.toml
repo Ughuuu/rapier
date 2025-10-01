@@ -86,6 +86,9 @@ thiserror = "2"
 profiling = "1.0"
 static_assertions = "1"
 
+# TODO: should be re-exported from simba
+wide = "0.7.1"
+
 [dev-dependencies]
 bincode = "1"
 serde_json = "1"
