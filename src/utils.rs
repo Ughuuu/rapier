@@ -599,15 +599,27 @@ pub fn smallest_abs_diff_between_angles<N: SimdRealCopy>(a: N, b: N) -> N {
     s_err.select(s_err_is_smallest, s_err_complement)
 }
 
-#[cfg(feature = "simd-nightly")]
+#[cfg(all(feature = "simd-nightly", feature = "f32"))]
 #[inline(always)]
 pub(crate) fn transmute_to_wide(val: [std::simd::f32x4; SIMD_WIDTH]) -> [wide::f32x4; SIMD_WIDTH] {
     unsafe { std::mem::transmute(val) }
 }
 
-#[cfg(feature = "simd-stable")]
+#[cfg(all(feature = "simd-stable", feature = "f32"))]
 #[inline(always)]
 pub(crate) fn transmute_to_wide(val: [wide::f32x4; SIMD_WIDTH]) -> [wide::f32x4; SIMD_WIDTH] {
+    val
+}
+
+#[cfg(all(feature = "simd-nightly", feature = "f64"))]
+#[inline(always)]
+pub(crate) fn transmute_to_wide(val: [std::simd::f64x4; SIMD_WIDTH]) -> [wide::f64x4; SIMD_WIDTH] {
+    unsafe { std::mem::transmute(val) }
+}
+
+#[cfg(all(feature = "simd-stable", feature = "f64"))]
+#[inline(always)]
+pub(crate) fn transmute_to_wide(val: [wide::f64x4; SIMD_WIDTH]) -> [wide::f64x4; SIMD_WIDTH] {
     val
 }
 
