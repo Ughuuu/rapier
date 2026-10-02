@@ -203,6 +203,7 @@ impl KinematicCharacterController {
             min_slope_slide_angle: self.min_slope_slide_angle,
             snap_to_ground: self.snap_to_ground,
             normal_nudge_factor: self.normal_nudge_factor,
+            ..Default::default()
         })
     }
 }

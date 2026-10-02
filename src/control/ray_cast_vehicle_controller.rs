@@ -54,6 +54,18 @@ pub struct WheelTuning {
     pub friction_slip: Real,
     /// The maximum force applied by the suspension.
     pub max_suspension_force: Real,
+    /// How much the side friction impulse rolls the chassis (default: `0.1`).
+    ///
+    /// The side impulse is applied at the contact point moved toward the chassis’ center of
+    /// mass along its up axis: `0.0` applies it at the center of mass’ height (no roll), `1.0`
+    /// at the contact point itself.
+    pub roll_influence: Real,
+    /// The weight of the forward (engine or brake) impulse when checking whether the tire
+    /// exceeds its grip and skids (default: `0.5`).
+    pub forward_skid_factor: Real,
+    /// The weight of the side impulse when checking whether the tire exceeds its grip and
+    /// skids (default: `1.0`).
+    pub side_skid_factor: Real,
 }
 
 impl Default for WheelTuning {
@@ -66,6 +78,9 @@ impl Default for WheelTuning {
             side_friction_stiffness: 1.0,
             friction_slip: 10.5,
             max_suspension_force: 6000.0,
+            roll_influence: 0.1,
+            forward_skid_factor: 0.5,
+            side_skid_factor: 1.0,
         }
     }
 }
@@ -106,6 +121,12 @@ struct WheelDesc {
     pub max_suspension_force: Real,
     /// The multiplier of friction between a tire and the collider it's on top of.
     pub side_friction_stiffness: Real,
+    /// How much the side friction impulse rolls the chassis.
+    pub roll_influence: Real,
+    /// The weight of the forward impulse in the skid check.
+    pub forward_skid_factor: Real,
+    /// The weight of the side impulse in the skid check.
+    pub side_skid_factor: Real,
 }
 
 #[cfg_attr(feature = "serde-serialize", derive(Serialize, Deserialize))]
@@ -152,7 +173,17 @@ pub struct Wheel {
     /// The wheel’s current rotation on its axle.
     pub rotation: Real,
     delta_rotation: Real,
-    roll_influence: Real, // TODO: make this public?
+    /// How much the side friction impulse rolls the chassis.
+    ///
+    /// The side impulse is applied at the contact point moved toward the chassis’ center of
+    /// mass along its up axis: `0.0` applies it at the center of mass’ height (no roll), `1.0`
+    /// at the contact point itself.
+    pub roll_influence: Real,
+    /// The weight of the forward (engine or brake) impulse when checking whether the tire
+    /// exceeds its grip and skids.
+    pub forward_skid_factor: Real,
+    /// The weight of the side impulse when checking whether the tire exceeds its grip and skids.
+    pub side_skid_factor: Real,
     /// The maximum force applied by the suspension.
     pub max_suspension_force: Real,
 
@@ -197,7 +228,9 @@ impl Wheel {
             rotation: 0.0,
             delta_rotation: 0.0,
             brake: 0.0,
-            roll_influence: 0.1,
+            roll_influence: info.roll_influence,
+            forward_skid_factor: info.forward_skid_factor,
+            side_skid_factor: info.side_skid_factor,
             clipped_inv_contact_dot_suspension: 0.0,
             suspension_relative_velocity: 0.0,
             wheel_suspension_force: 0.0,
@@ -228,6 +261,15 @@ impl Wheel {
     /// The world-space direction of the wheel’s axle.
     pub fn axle(&self) -> Vector {
         self.wheel_axle_ws
+    }
+
+    /// The fraction of its friction impulses this wheel kept during the last
+    /// [`DynamicRayCastVehicleController::update_vehicle`].
+    ///
+    /// This is `1.0` while the tire grips (or is off the ground), and smaller than `1.0` while
+    /// it skids. It is `0.0` until the vehicle is first updated.
+    pub fn skid_info(&self) -> Real {
+        self.skid_info
     }
 }
 
@@ -292,6 +334,9 @@ impl DynamicRayCastVehicleController {
             max_suspension_travel: tuning.max_suspension_travel,
             max_suspension_force: tuning.max_suspension_force,
             side_friction_stiffness: tuning.side_friction_stiffness,
+            roll_influence: tuning.roll_influence,
+            forward_skid_factor: tuning.forward_skid_factor,
+            side_skid_factor: tuning.side_skid_factor,
         };
 
         let wheel_id = self.wheels.len();
@@ -599,9 +644,6 @@ impl DynamicRayCastVehicleController {
             }
         }
 
-        let side_factor = 1.0;
-        let fwd_factor = 0.5;
-
         let mut sliding = false;
         {
             for wheel_id in 0..num_wheels {
@@ -647,8 +689,8 @@ impl DynamicRayCastVehicleController {
 
                     wheel.forward_impulse = rolling_friction;
 
-                    let x = wheel.forward_impulse * fwd_factor;
-                    let y = wheel.side_impulse * side_factor;
+                    let x = wheel.forward_impulse * wheel.forward_skid_factor;
+                    let y = wheel.side_impulse * wheel.side_skid_factor;
 
                     let impulse_squared = x * x + y * y;
 

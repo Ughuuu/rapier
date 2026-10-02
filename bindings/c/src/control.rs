@@ -501,6 +501,7 @@ mod vehicle {
                 friction_slip: nonnegative(self.friction_slip)?,
                 max_suspension_force: nonnegative(self.max_suspension_force)?,
                 side_friction_stiffness: nonnegative(self.side_friction_stiffness)?,
+                ..WheelTuning::default()
             })
         }
     }
