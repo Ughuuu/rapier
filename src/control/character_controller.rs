@@ -203,6 +203,35 @@ pub struct KinematicCharacterController {
     /// This value should remain fairly small since it can introduce artificial "bumps" when sliding
     /// along a flat surface.
     pub normal_nudge_factor: Real,
+    /// The maximum number of shape-casts [`Self::move_shape`] runs while sliding along obstacles
+    /// (default: `20`).
+    ///
+    /// Each iteration casts the character along its remaining movement and slides it along
+    /// whatever it hits; the movement stops early once this budget is spent.
+    pub max_slide_iterations: u32,
+    /// The maximum distance the character is pushed out of overlapping colliders per call to
+    /// [`Self::move_shape`] (default: `CharacterLength::Relative(0.25)`, relative to the
+    /// character’s height).
+    ///
+    /// This depenetration only runs when the desired movement is zero.
+    pub max_depenetration_distance: CharacterLength,
+    /// The maximum number of depenetration passes per call to [`Self::move_shape`] (default: `4`).
+    ///
+    /// Several passes let the character get out of one collider without staying stuck in another.
+    pub max_depenetration_iterations: u32,
+    /// The extra distance, beyond [`Self::offset`], within which contacts count for ground
+    /// detection, kinematic platform motion and collision impulses (default:
+    /// `CharacterLength::Absolute(0.05)`).
+    pub ground_prediction_distance: CharacterLength,
+    /// The minimum dot product between a contact normal and [`Self::up`] for that contact to
+    /// ground the character (default: `1.0e-3`, i.e. normals up to about 89.94 degrees from `up`).
+    pub min_ground_normal_dot: Real,
+    /// Should the character move along with the kinematic bodies it touches, like moving
+    /// platforms? (default: `true`)
+    ///
+    /// When enabled, a kinematic body in contact transfers its velocity along the contact normal
+    /// and, through friction, along the contact plane.
+    pub follow_kinematic_platforms: bool,
 }
 
 impl Default for KinematicCharacterController {
@@ -216,6 +245,12 @@ impl Default for KinematicCharacterController {
             min_slope_slide_angle: Real::frac_pi_4(),
             snap_to_ground: Some(CharacterLength::Relative(0.2)),
             normal_nudge_factor: 1.0e-4,
+            max_slide_iterations: 20,
+            max_depenetration_distance: CharacterLength::Relative(0.25),
+            max_depenetration_iterations: 4,
+            ground_prediction_distance: CharacterLength::Absolute(0.05),
+            min_ground_normal_dot: 1.0e-3,
+            follow_kinematic_platforms: true,
         }
     }
 }
@@ -236,7 +271,7 @@ impl KinematicCharacterController {
     /// what stops an obstacle pushed into a non-moving character from tunneling through it
     /// ([`Self::move_shape`]'s shape-casts never run on a zero desired translation).
     ///
-    /// The total correction per call is capped relative to the character’s height.
+    /// The total correction per call is capped by [`Self::max_depenetration_distance`].
     fn check_and_fix_penetrations(
         &self,
         queries: &QueryPipeline,
@@ -246,12 +281,12 @@ impl KinematicCharacterController {
         result: &mut EffectiveCharacterMovement,
     ) {
         let offset = self.offset.eval(dims.y);
-        let max_correction = dims.y * 0.25;
+        let max_correction = self.max_depenetration_distance.eval(dims.y);
         let mut applied = 0.0;
 
         // Run a few passes so that getting pushed out of one collider doesn’t leave the
         // character stuck inside another one.
-        for _ in 0..4 {
+        for _ in 0..self.max_depenetration_iterations {
             let character_aabb = character_shape
                 .compute_aabb(&(Pose::from_translation(result.translation) * *character_pos))
                 .loosened(offset);
@@ -335,7 +370,7 @@ impl KinematicCharacterController {
             None,
         );
 
-        let mut max_iters = 20;
+        let mut max_iters = self.max_slide_iterations;
         let mut kinematic_friction_translation = Vector::ZERO;
         let offset = self.offset.eval(dims.y);
         let mut is_moving = false;
@@ -489,7 +524,7 @@ impl KinematicCharacterController {
     }
 
     fn predict_ground(&self, up_extends: Real) -> Real {
-        self.offset.eval(up_extends) + 0.05
+        self.offset.eval(up_extends) + self.ground_prediction_distance.eval(up_extends)
     }
 
     #[profiling::function]
@@ -535,7 +570,7 @@ impl KinematicCharacterController {
                 let kinematic_parent = collider
                     .parent
                     .and_then(|p| queries.bodies.get(p.handle))
-                    .filter(|rb| rb.is_kinematic());
+                    .filter(|rb| self.follow_kinematic_platforms && rb.is_kinematic());
 
                 for m in &manifolds {
                     if self.is_grounded_at_contact_manifold(m, character_pos, dims) {
@@ -608,8 +643,8 @@ impl KinematicCharacterController {
         let normal = -(character_pos.rotation * manifold.local_n1);
 
         // For the controller to be grounded, the angle between the contact normal and the up vector
-        // has to be smaller than acos(1.0e-3) = 89.94 degrees.
-        if normal.dot(self.up) >= 1.0e-3 {
+        // has to be smaller than acos(min_ground_normal_dot) (89.94 degrees by default).
+        if normal.dot(self.up) >= self.min_ground_normal_dot {
             let prediction = self.predict_ground(dims.y);
             for contact in &manifold.points {
                 if contact.dist <= prediction {

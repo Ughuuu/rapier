@@ -7,10 +7,15 @@
 - `WheelTuning::forward_skid_factor` and `side_skid_factor` (defaults `0.5` and `1.0`): the weights
   of the forward and side impulses in the skid check, formerly hard-coded. Also on `Wheel`.
 - `Wheel::skid_info`: the fraction of its friction impulses a wheel kept during the last update.
+- `KinematicCharacterController` settings for its former constants: `max_slide_iterations` (`20`),
+  `max_depenetration_distance` (`Relative(0.25)`), `max_depenetration_iterations` (`4`),
+  `ground_prediction_distance` (`Absolute(0.05)`), `min_ground_normal_dot` (`1.0e-3`) and
+  `follow_kinematic_platforms` (`true`). The defaults behave exactly as before.
 
 ### Modified
 
-- `WheelTuning` has new public fields: struct literals need `..Default::default()`.
+- `WheelTuning` and `KinematicCharacterController` have new public fields: struct literals need
+  `..Default::default()`.
 
 ## v0.36.0 (24 September 2026)
 

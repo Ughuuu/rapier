@@ -2562,6 +2562,7 @@ impl RapierContextSimulation {
             min_slope_slide_angle: options.min_slope_slide_angle,
             snap_to_ground: options.snap_to_ground,
             normal_nudge_factor: options.normal_nudge_factor,
+            ..Default::default()
         };
 
         let dt = self.integration_parameters.dt;
