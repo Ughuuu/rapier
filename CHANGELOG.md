@@ -1,3 +1,17 @@
+## Unreleased
+
+### Added
+
+- `WheelTuning::roll_influence` (default `0.1`): how much the side friction impulse rolls the
+  chassis. `Wheel::roll_influence` is now public.
+- `WheelTuning::forward_skid_factor` and `side_skid_factor` (defaults `0.5` and `1.0`): the weights
+  of the forward and side impulses in the skid check, formerly hard-coded. Also on `Wheel`.
+- `Wheel::skid_info`: the fraction of its friction impulses a wheel kept during the last update.
+
+### Modified
+
+- `WheelTuning` has new public fields: struct literals need `..Default::default()`.
+
 ## v0.36.0 (24 September 2026)
 
 ### Added
